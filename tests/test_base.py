@@ -9,7 +9,6 @@ from mock import patch
 
 from filebrowser.base import FileObject, FileListing
 from filebrowser.sites import site
-from filebrowser.settings import VERSIONS
 from tests.base import FilebrowserTestCase as TestCase
 
 
@@ -65,17 +64,6 @@ class FileObjectUnicodeTests(TestCase):
 
         self.assertEqual(f.path_relative_directory, '$%^&*/測試文件.jpg')
         self.assertEqual(f.dirname, r'$%^&*')
-
-    @patch('filebrowser.base.os.path', posixpath)
-    @patch('filebrowser.namers.VERSION_NAMER', 'filebrowser.namers.OptionsNamer')
-    def test_unicode_options_namer_version(self):
-        path_unicode = os.path.join(self.FOLDER_PATH, '測試文件.jpg')
-        expected = u'測試文件_large--680x0.jpg'
-
-        shutil.copy(self.STATIC_IMG_PATH, path_unicode)
-        f = FileObject(path_unicode, site=site)
-        version = f.version_generate('large')
-        self.assertEqual(version.filename, expected)
 
 
 class FileObjectAttributeTests(TestCase):
@@ -152,22 +140,6 @@ class FileObjectAttributeTests(TestCase):
         self.assertEqual(self.F_SUBFOLDER.dirname, "folder")
         self.assertEqual(self.F_SUBFOLDER.url, site.storage.url(self.F_SUBFOLDER.path))
 
-    def test_image_attributes(self):
-        """
-        FileObject image attributes
-
-        # dimensions
-        # width
-        # height
-        # aspectratio
-        # orientation
-        """
-        self.assertEqual(self.F_IMAGE.dimensions, (1000, 750))
-        self.assertEqual(self.F_IMAGE.width, 1000)
-        self.assertEqual(self.F_IMAGE.height, 750)
-        self.assertEqual(self.F_IMAGE.aspectratio, 1.3333333333333333)
-        self.assertEqual(self.F_IMAGE.orientation, 'Landscape')
-
     def test_folder_attributes(self):
         """
         FileObject folder attributes
@@ -195,155 +167,16 @@ class FileObjectAttributeTests(TestCase):
         self.assertEqual(self.F_SUBFOLDER.is_folder, True)
         self.assertEqual(self.F_SUBFOLDER.is_empty, True)
 
-    @patch('filebrowser.base.ADMIN_VERSIONS', ['large'])
-    def test_version_attributes_1(self):
-        """
-        FileObject version attributes/methods
-        without versions_basedir
-
-        # is_version
-        # original
-        # original_filename
-        # versions_basedir
-        # versions
-        # admin_versions
-        # version_name(suffix)
-        # version_path(suffix)
-        # version_generate(suffix)
-        """
-        # new settings
-        version_list = sorted(['_test/_versions/folder/testimage_{}.jpg'.format(name) for name in VERSIONS.keys()])
-        admin_version_list = ['_test/_versions/folder/testimage_large.jpg']
-
-        self.assertEqual(self.F_IMAGE.is_version, False)
-        self.assertEqual(self.F_IMAGE.original.path, self.F_IMAGE.path)
-        self.assertEqual(self.F_IMAGE.versions_basedir, "_test/_versions/")
-        self.assertEqual(self.F_IMAGE.versions(), version_list)
-        self.assertEqual(self.F_IMAGE.admin_versions(), admin_version_list)
-        self.assertEqual(self.F_IMAGE.version_name("large"), "testimage_large.jpg")
-        self.assertEqual(self.F_IMAGE.version_path("large"), "_test/_versions/folder/testimage_large.jpg")
-
-        # version does not exist yet
-        f_version = FileObject(os.path.join(site.directory, 'folder', "testimage_large.jpg"), site=site)
-        self.assertEqual(f_version.exists, False)
-        # generate version
-        f_version = self.F_IMAGE.version_generate("large")
-        self.assertEqual(f_version.path, "_test/_versions/folder/testimage_large.jpg")
-        self.assertEqual(f_version.exists, True)
-        self.assertEqual(f_version.is_version, True)
-        self.assertEqual(f_version.original_filename, "testimage.jpg")
-        self.assertEqual(f_version.original.path, self.F_IMAGE.path)
-        # FIXME: versions should not have versions or admin_versions
-
-    @patch('filebrowser.base.ADMIN_VERSIONS', ['large'])
-    def test_version_attributes_2(self):
-        """
-        FileObject version attributes/methods
-        with versions_basedir
-
-        # is_version
-        # original
-        # original_filename
-        # versions_basedir
-        # versions
-        # admin_versions
-        # version_name(suffix)
-        # version_generate(suffix)
-        """
-
-        version_list = sorted(['_test/_versions/folder/testimage_{}.jpg'.format(name) for name in VERSIONS.keys()])
-        admin_version_list = ['_test/_versions/folder/testimage_large.jpg']
-
-        self.assertEqual(self.F_IMAGE.is_version, False)
-        self.assertEqual(self.F_IMAGE.original.path, self.F_IMAGE.path)
-        self.assertEqual(self.F_IMAGE.versions_basedir, "_test/_versions/")
-        self.assertEqual(self.F_IMAGE.versions(), version_list)
-        self.assertEqual(self.F_IMAGE.admin_versions(), admin_version_list)
-        self.assertEqual(self.F_IMAGE.version_name("large"), "testimage_large.jpg")
-        self.assertEqual(self.F_IMAGE.version_path("large"), "_test/_versions/folder/testimage_large.jpg")
-
-        # version does not exist yet
-        f_version = FileObject(os.path.join(site.directory, 'folder', "testimage_large.jpg"), site=site)
-        self.assertEqual(f_version.exists, False)
-        # generate version
-        f_version = self.F_IMAGE.version_generate("large")
-        self.assertEqual(f_version.path, "_test/_versions/folder/testimage_large.jpg")
-        self.assertEqual(f_version.exists, True)
-        self.assertEqual(f_version.is_version, True)
-        self.assertEqual(f_version.original_filename, "testimage.jpg")
-        self.assertEqual(f_version.original.path, self.F_IMAGE.path)
-        self.assertEqual(f_version.versions(), [])
-        self.assertEqual(f_version.admin_versions(), [])
-
-    @patch('filebrowser.base.ADMIN_VERSIONS', ['large'])
-    def test_version_attributes_3(self):
-        """
-        FileObject version attributes/methods
-        with alternative versions_basedir
-
-        # is_version
-        # original
-        # original_filename
-        # versions_basedir
-        # versions
-        # admin_versions
-        # version_name(suffix)
-        # version_generate(suffix)
-        """
-
-        # new settings
-        version_list = sorted(['_test/_versions/folder/testimage_{}.jpg'.format(name) for name in VERSIONS.keys()])
-        admin_version_list = ['_test/_versions/folder/testimage_large.jpg']
-
-        self.assertEqual(self.F_IMAGE.is_version, False)
-        self.assertEqual(self.F_IMAGE.original.path, self.F_IMAGE.path)
-        self.assertEqual(self.F_IMAGE.versions_basedir, "_test/_versions/")
-        self.assertEqual(self.F_IMAGE.versions(), version_list)
-        self.assertEqual(self.F_IMAGE.admin_versions(), admin_version_list)
-        self.assertEqual(self.F_IMAGE.version_name("large"), "testimage_large.jpg")
-        self.assertEqual(self.F_IMAGE.version_path("large"), "_test/_versions/folder/testimage_large.jpg")
-
-        # version does not exist yet
-        f_version = FileObject(os.path.join(site.directory, 'folder', "testimage_large.jpg"), site=site)
-        self.assertEqual(f_version.exists, False)
-        # generate version
-        f_version = self.F_IMAGE.version_generate("large")
-        self.assertEqual(f_version.path, "_test/_versions/folder/testimage_large.jpg")
-        self.assertEqual(f_version.exists, True)
-        self.assertEqual(f_version.is_version, True)
-        self.assertEqual(f_version.original_filename, "testimage.jpg")
-        self.assertEqual(f_version.original.path, self.F_IMAGE.path)
-        self.assertEqual(f_version.versions(), [])
-        self.assertEqual(f_version.admin_versions(), [])
-
     def test_delete(self):
         """
         FileObject delete methods
 
         # delete
-        # delete_versions
-        # delete_admin_versions
         """
 
         # version does not exist yet
         f_version = FileObject(os.path.join(site.directory, 'folder', "testimage_large.jpg"), site=site)
         self.assertEqual(f_version.exists, False)
-        # generate version
-        f_version = self.F_IMAGE.version_generate("large")
-        f_version_thumb = self.F_IMAGE.version_generate("admin_thumbnail")
-        self.assertEqual(f_version.exists, True)
-        self.assertEqual(f_version_thumb.exists, True)
-        self.assertEqual(f_version.path, "_test/_versions/folder/testimage_large.jpg")
-        self.assertEqual(f_version_thumb.path, "_test/_versions/folder/testimage_admin_thumbnail.jpg")
-
-        # delete admin versions (large)
-        self.F_IMAGE.delete_admin_versions()
-        self.assertEqual(site.storage.exists(f_version.path), False)
-
-        # delete versions (admin_thumbnail)
-        self.F_IMAGE.delete_versions()
-        self.assertEqual(site.storage.exists(f_version_thumb.path), False)
-
 
 class FileListingTests(TestCase):
     """
@@ -363,7 +196,6 @@ class FileListingTests(TestCase):
         shutil.copy(self.STATIC_IMG_PATH, self.DIRECTORY_PATH)
 
     def test_init_attributes(self):
-
         """
         FileListing init attributes
 
@@ -433,19 +265,10 @@ class FileListingTests(TestCase):
 
 
 class FileObjecNamerTests(TestCase):
-
-    PATCH_VERSIONS = {
-        'thumbnail': {'verbose_name': 'Thumbnail (1 col)', 'width': 60, 'height': 60, 'opts': 'crop'},
-        'small': {'verbose_name': 'Small (2 col)', 'width': 140, 'height': '', 'opts': ''},
-        'large': {'verbose_name': 'Large (8 col)', 'width': 680, 'height': '', 'opts': ''},
-    }
-    PATCH_ADMIN_VERSIONS = ['large']
-
     def setUp(self):
         super(FileObjecNamerTests, self).setUp()
         shutil.copy(self.STATIC_IMG_PATH, self.FOLDER_PATH)
 
-    @patch('filebrowser.namers.VERSION_NAMER', 'filebrowser.namers.OptionsNamer')
     def test_init_attributes(self):
         """
         FileObject init attributes
@@ -465,48 +288,3 @@ class FileObjecNamerTests(TestCase):
         self.assertEqual(self.F_IMAGE.filename_root, 'testimage')
         self.assertEqual(self.F_IMAGE.extension, '.jpg')
         self.assertEqual(self.F_IMAGE.mimetype, ('image/jpeg', None))
-
-    @patch('filebrowser.namers.VERSION_NAMER', 'filebrowser.namers.OptionsNamer')
-    @patch('filebrowser.base.VERSIONS', PATCH_VERSIONS)
-    @patch('filebrowser.base.ADMIN_VERSIONS', PATCH_ADMIN_VERSIONS)
-    def test_version_attributes_with_options_namer(self):
-        """
-        FileObject version attributes/methods
-        without versions_basedir
-
-        # is_version
-        # original
-        # original_filename
-        # versions_basedir
-        # versions
-        # admin_versions
-        # version_name(suffix)
-        # version_path(suffix)
-        # version_generate(suffix)
-        """
-        # new settings
-        version_list = sorted([
-            '_test/_versions/folder/testimage_large--680x0.jpg',
-            '_test/_versions/folder/testimage_small--140x0.jpg',
-            '_test/_versions/folder/testimage_thumbnail--60x60--opts-crop.jpg'
-        ])
-        admin_version_list = ['_test/_versions/folder/testimage_large--680x0.jpg']
-
-        self.assertEqual(self.F_IMAGE.is_version, False)
-        self.assertEqual(self.F_IMAGE.original.path, self.F_IMAGE.path)
-        self.assertEqual(self.F_IMAGE.versions_basedir, "_test/_versions/")
-        self.assertEqual(self.F_IMAGE.versions(), version_list)
-        self.assertEqual(self.F_IMAGE.admin_versions(), admin_version_list)
-        self.assertEqual(self.F_IMAGE.version_name("large"), "testimage_large--680x0.jpg")
-        self.assertEqual(self.F_IMAGE.version_path("large"), "_test/_versions/folder/testimage_large--680x0.jpg")
-
-        # version does not exist yet
-        f_version = FileObject(os.path.join(site.directory, 'folder', "testimage_large--680x0.jpg"), site=site)
-        self.assertEqual(f_version.exists, False)
-        # generate version
-        f_version = self.F_IMAGE.version_generate("large")
-        self.assertEqual(f_version.path, "_test/_versions/folder/testimage_large--680x0.jpg")
-        self.assertEqual(f_version.exists, True)
-        self.assertEqual(f_version.is_version, True)
-        self.assertEqual(f_version.original_filename, "testimage.jpg")
-        self.assertEqual(f_version.original.path, self.F_IMAGE.path)

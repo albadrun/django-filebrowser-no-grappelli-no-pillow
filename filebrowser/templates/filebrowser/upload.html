@@ -88,7 +88,7 @@
 {% endblock %}
 
 <!-- COLTYPE/BODYCLASS -->
-{% block bodyclass %}change-form filebrowser{% if query.pop %} popup{% endif %}{% endblock %}
+{% block bodyclass %}change-form filebrowser{% endblock %}
 {% block coltype %}colM{% endblock %}
 
 <!-- BREADCRUMBS -->
@@ -97,10 +97,6 @@
 <!-- CONTENT -->
 {% block content %}
 <div id="content-main">
-    <!-- POP-UP BREADCRUMBS -->
-    {% if query.pop %}
-        {% include "filebrowser/include/breadcrumbs.html" %}
-    {% endif %}
     <form>
         <div>
             <fieldset class="module aligned">

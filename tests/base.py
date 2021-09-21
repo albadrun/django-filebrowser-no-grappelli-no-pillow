@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from filebrowser.settings import DIRECTORY, VERSIONS_BASEDIR
+from filebrowser.settings import DIRECTORY
 from filebrowser.base import FileObject
 from filebrowser.sites import site
 
@@ -27,7 +27,6 @@ class FilebrowserTestCase(TestCase):
         self.DIRECTORY = DIRECTORY
         self.TEST_PATH = os.path.join(site.storage.location, '_test')
         self.DIRECTORY_PATH = os.path.join(site.storage.location, DIRECTORY)
-        self.VERSIONS_PATH = os.path.join(site.storage.location, VERSIONS_BASEDIR)
 
         if os.path.exists(self.TEST_PATH):
             raise Exception('TEST_PATH Already Exists')
@@ -36,7 +35,6 @@ class FilebrowserTestCase(TestCase):
         self.FOLDER_PATH = os.path.join(self.DIRECTORY_PATH, 'folder')
         self.SUBFOLDER_PATH = os.path.join(self.FOLDER_PATH, 'subfolder')
         self.CREATEFOLDER_PATH = os.path.join(self.DIRECTORY_PATH, 'create')
-        self.PLACEHOLDER_PATH = os.path.join(self.DIRECTORY_PATH, 'placeholders')
 
         self.STATIC_IMG_PATH = os.path.join(settings.BASE_DIR, 'filebrowser', "static", "filebrowser", "img", "testimage.jpg")
         self.STATIC_IMG_BAD_NAME_PATH = os.path.join(settings.BASE_DIR, 'filebrowser', "static", "filebrowser", "img", "TEST_IMAGE_000.jpg")

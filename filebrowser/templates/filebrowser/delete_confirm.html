@@ -1,17 +1,13 @@
 {% extends "admin/base_site.html" %}
 
 <!-- LOADING -->
-{% load static i18n fb_tags fb_versions fb_compat %}
+{% load static i18n fb_tags fb_compat %}
 
 <!-- BREADCRBUMBS -->
 {% block breadcrumbs %}{% include "filebrowser/include/breadcrumbs.html" %}{% endblock %}
 
 <!-- CONTENT -->
 {% block content %}
-    <!-- POP-UP BREADCRUMBS -->
-    {% if query.pop %}
-        {% include "filebrowser/include/breadcrumbs.html" %}
-    {% endif %}
     <p>{% blocktrans with fileobject.filename as escaped_object %}Are you sure you want to delete the {{ object_name }} "{{ escaped_object }}"? All of the following related items will be deleted:{% endblocktrans %}</p>
 
     <ul>

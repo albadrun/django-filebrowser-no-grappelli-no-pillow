@@ -33,9 +33,9 @@ from filebrowser.decorators import path_exists, file_exists
 from filebrowser.storage import FileSystemStorageMixin
 from filebrowser.templatetags.fb_tags import query_helper
 from filebrowser.utils import convert_filename
-from filebrowser.settings import (DIRECTORY, EXTENSIONS, SELECT_FORMATS, ADMIN_VERSIONS, ADMIN_THUMBNAIL, 
-    MAX_UPLOAD_SIZE, NORMALIZE_FILENAME, CONVERT_FILENAME, SEARCH_TRAVERSE, EXCLUDE, VERSIONS, 
-    VERSIONS_BASEDIR, EXTENSION_LIST, DEFAULT_SORTING_BY, DEFAULT_SORTING_ORDER, LIST_PER_PAGE,
+from filebrowser.settings import (DIRECTORY, EXTENSIONS, SELECT_FORMATS,
+    MAX_UPLOAD_SIZE, NORMALIZE_FILENAME, CONVERT_FILENAME, SEARCH_TRAVERSE, EXCLUDE,
+    DEFAULT_SORTING_BY, DEFAULT_SORTING_ORDER, LIST_PER_PAGE,
     OVERWRITE_EXISTING, DEFAULT_PERMISSIONS, UPLOAD_TEMPDIR, ADMIN_CUSTOM
 )
 
@@ -139,9 +139,6 @@ def get_settings_var(directory=DIRECTORY):
     # Extensions/Formats (for FileBrowseField)
     settings_var['EXTENSIONS'] = EXTENSIONS
     settings_var['SELECT_FORMATS'] = SELECT_FORMATS
-    # Versions
-    settings_var['ADMIN_VERSIONS'] = ADMIN_VERSIONS
-    settings_var['ADMIN_THUMBNAIL'] = ADMIN_THUMBNAIL
     # FileBrowser Options
     settings_var['MAX_UPLOAD_SIZE'] = MAX_UPLOAD_SIZE
     # Normalize Filenames
@@ -276,12 +273,6 @@ class FileBrowserSite(object):
         filter_re = []
         for exp in EXCLUDE:
             filter_re.append(re.compile(exp))
-
-        # do not filter if VERSIONS_BASEDIR is being used
-        if not VERSIONS_BASEDIR:
-            for k, v in VERSIONS.items():
-                exp = (r'_%s(%s)$') % (k, '|'.join(EXTENSION_LIST))
-                filter_re.append(re.compile(exp, re.IGNORECASE))
 
         def filter_browse(item):
             "Defining a browse filter"
@@ -463,7 +454,6 @@ class FileBrowserSite(object):
         if request.GET:
             try:
                 signals.filebrowser_pre_delete.send(sender=request, path=fileobject.path, name=fileobject.filename, site=self)
-                fileobject.delete_versions()
                 fileobject.delete()
                 signals.filebrowser_post_delete.send(sender=request, path=fileobject.path, name=fileobject.filename, site=self)
                 messages.add_message(request, messages.SUCCESS, _('Successfully deleted %s') % fileobject.filename)
@@ -500,7 +490,6 @@ class FileBrowserSite(object):
                         signals.filebrowser_actions_post_apply.send(sender=request, action_name=action_name, fileobject=[fileobject], result=action_response, site=self)
                     if new_name != fileobject.filename:
                         signals.filebrowser_pre_rename.send(sender=request, path=fileobject.path, name=fileobject.filename, new_name=new_name, site=self)
-                        fileobject.delete_versions()
                         self.storage.move(fileobject.path, os.path.join(fileobject.head, new_name))
                         signals.filebrowser_post_rename.send(sender=request, path=fileobject.path, name=fileobject.filename, new_name=new_name, site=self)
                         messages.add_message(request, messages.SUCCESS, _('Renaming was successful.'))
@@ -629,11 +618,3 @@ class FileBrowserSite(object):
 storage = DefaultStorage()
 # Default FileBrowser site
 site = FileBrowserSite(name='filebrowser', storage=storage)
-
-# Default actions
-from filebrowser.actions import flip_horizontal, flip_vertical, rotate_90_clockwise, rotate_90_counterclockwise, rotate_180
-site.add_action(flip_horizontal)
-site.add_action(flip_vertical)
-site.add_action(rotate_90_clockwise)
-site.add_action(rotate_90_counterclockwise)
-site.add_action(rotate_180)

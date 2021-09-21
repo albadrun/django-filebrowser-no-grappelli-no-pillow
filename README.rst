@@ -37,6 +37,11 @@ This fork removes the dependency on Grappelli.
    :scale: 50 %
    :alt: django filebrowser no grappelli
 
+No Pillow
+------------
+
+This forks remove Pillow and all image processing.
+
 Installation
 ------------
 

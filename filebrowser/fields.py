@@ -15,7 +15,7 @@ from django.contrib.admin.options import FORMFIELD_FOR_DBFIELD_DEFAULTS
 from six import string_types
 
 from filebrowser.base import FileObject
-from filebrowser.settings import ADMIN_THUMBNAIL, EXTENSIONS, UPLOAD_TEMPDIR
+from filebrowser.settings import EXTENSIONS, UPLOAD_TEMPDIR
 from filebrowser.sites import site
 
 
@@ -49,7 +49,6 @@ class FileBrowseWidget(Input):
         final_attrs['directory'] = self.directory
         final_attrs['extensions'] = self.extensions
         final_attrs['format'] = self.format
-        final_attrs['ADMIN_THUMBNAIL'] = ADMIN_THUMBNAIL
         final_attrs['data_attrs'] = {k: v for k, v in final_attrs.items() if k.startswith('data-')}
         filebrowser_site = self.site
         if value != "":
@@ -139,6 +138,7 @@ class FileBrowseField(CharField):
         }
         return super(FileBrowseField, self).formfield(**defaults)
 
+
 FORMFIELD_FOR_DBFIELD_DEFAULTS[FileBrowseField] = {'widget': FileBrowseWidget}
 
 
@@ -179,7 +179,6 @@ class FileBrowseUploadWidget(Input):
         final_attrs['format'] = self.format
         final_attrs['upload_to'] = self.upload_to
         final_attrs['temp_upload_dir'] = UPLOAD_TEMPDIR
-        final_attrs['ADMIN_THUMBNAIL'] = ADMIN_THUMBNAIL
         if value != "":
             try:
                 final_attrs['directory'] = os.path.split(value.original.path_relative_directory)[0]
@@ -284,6 +283,7 @@ class FileBrowseUploadField(CharField):
 try:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([], ["^filebrowser\.fields\.FileBrowseField"])
-    add_introspection_rules([], ["^filebrowser\.fields\.FileBrowseUploadField"])
+    add_introspection_rules(
+        [], ["^filebrowser\.fields\.FileBrowseUploadField"])
 except:
     pass

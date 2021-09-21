@@ -2,12 +2,8 @@
 <thead>
     <tr>
         <!-- ACTIONS -->
-        {% comment %}{% if not query.pop %}<th><input type="checkbox" id="action-toggle"></th>{% endif %}{% endcomment %}
-        <!-- SELECT -->
-        {% if query.pop == "1" %}<th></th>{% endif %}
-        {% if query.pop == "2" %}<th></th>{% endif %}
-        {% if query.pop == "3" %}<th></th>{% endif %}
-        {% if query.pop == "4" %}<th></th>{% endif %}
+        {% comment %}<th><input type="checkbox" id="action-toggle"></th>{% endcomment %}
+
         <!-- FILETYPE -->
         {% if query.o == "filetype" %}
         <th scope="col" class="sortable sorted {{ query.ot }}ending">
@@ -24,12 +20,7 @@
             <div class="clear"></div>
         </th>
         {% endif %}
-        <!-- THUMB -->
-        <th scope="col">
-            <div class="text"><span>{% trans "Thumbnail" %}</span></div>
-            <div class="clear"></div>
-        </th>
-        <!-- FILENAME / DIMENSIONS  -->
+        <!-- FILENAME -->
         {% if query.o == "filename_lower" %}
         <th scope="col" class="sortable sorted {{ query.ot }}ending">
             <div class="sortoptions">

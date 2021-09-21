@@ -12,24 +12,9 @@ from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from six import python_2_unicode_compatible, string_types
 
-from filebrowser.settings import EXTENSIONS, VERSIONS, ADMIN_VERSIONS, VERSIONS_BASEDIR, VERSION_QUALITY, STRICT_PIL, IMAGE_MAXBLOCK, DEFAULT_PERMISSIONS
-from filebrowser.utils import path_strip, process_image
-from .namers import get_namer
-
-if STRICT_PIL:
-    from PIL import Image
-    from PIL import ImageFile
-else:
-    try:
-        from PIL import Image
-        from PIL import ImageFile
-    except ImportError:
-        import Image
-        import ImageFile
-
-from .compat import get_modified_time
-
-ImageFile.MAXBLOCK = IMAGE_MAXBLOCK  # default is 64k
+from filebrowser.compat import get_modified_time
+from filebrowser.settings import EXTENSIONS
+from filebrowser.utils import path_strip
 
 
 class FileListing():
@@ -316,55 +301,6 @@ class FileObject():
         "URL for the file/folder as defined with site.storage"
         return self.site.storage.url(self.path)
 
-    # IMAGE ATTRIBUTES/PROPERTIES
-    # dimensions
-    # width
-    # height
-    # aspectratio
-    # orientation
-
-    @cached_property
-    def dimensions(self):
-        "Image dimensions as a tuple"
-        if self.filetype != 'Image':
-            return None
-        try:
-            im = Image.open(self.site.storage.open(self.path))
-            return im.size
-        except:
-            pass
-
-    @property
-    def width(self):
-        "Image width in px"
-        if self.dimensions:
-            return self.dimensions[0]
-        return None
-
-    @property
-    def height(self):
-        "Image height in px"
-        if self.dimensions:
-            return self.dimensions[1]
-        return None
-
-    @property
-    def aspectratio(self):
-        "Aspect ratio (float format)"
-        if self.dimensions:
-            return float(self.width) / float(self.height)
-        return None
-
-    @property
-    def orientation(self):
-        "Image orientation, either 'Landscape' or 'Portrait'"
-        if self.dimensions:
-            if self.dimensions[0] >= self.dimensions[1]:
-                return "Landscape"
-            else:
-                return "Portrait"
-        return None
-
     # FOLDER ATTRIBUTES/PROPERTIES
     # is_folder
     # is_empty
@@ -383,154 +319,8 @@ class FileObject():
                 return True
         return False
 
-    # VERSION ATTRIBUTES/PROPERTIES
-    # is_version
-    # versions_basedir
-    # original
-    # original_filename
-
-    @property
-    def is_version(self):
-        "True if file is a version, false otherwise"
-        return self.head.startswith(VERSIONS_BASEDIR)
-
-    @property
-    def versions_basedir(self):
-        "Main directory for storing versions (either VERSIONS_BASEDIR or site.directory)"
-        if VERSIONS_BASEDIR:
-            return VERSIONS_BASEDIR
-        elif self.site.directory:
-            return self.site.directory
-        else:
-            return ""
-
-    @property
-    def original(self):
-        "Returns the original FileObject"
-        if self.is_version:
-            relative_path = self.head.replace(self.versions_basedir, "").lstrip("/")
-            return FileObject(os.path.join(self.site.directory, relative_path, self.original_filename), site=self.site)
-        return self
-
-    @property
-    def original_filename(self):
-        "Get the filename of an original image from a version"
-        if not self.is_version:
-            return self.filename
-        return get_namer(
-            file_object=self,
-            filename_root=self.filename_root,
-            extension=self.extension,
-        ).get_original_name()
-
-    # VERSION METHODS
-    # versions()
-    # admin_versions()
-    # version_name(suffix)
-    # version_path(suffix)
-    # version_generate(suffix)
-
-    def _get_options(self, version_suffix, extra_options=None):
-        options = dict(VERSIONS.get(version_suffix, {}))
-        if extra_options:
-            options.update(extra_options)
-        if 'size' in options and 'width' not in options:
-            width, height = options['size']
-            options['width'] = width
-            options['height'] = height
-        return options
-
-    def versions(self):
-        "List of versions (not checking if they actually exist)"
-        version_list = []
-        if self.filetype == "Image" and not self.is_version:
-            for version in sorted(VERSIONS):
-                version_list.append(os.path.join(self.versions_basedir, self.dirname, self.version_name(version)))
-        return version_list
-
-    def admin_versions(self):
-        "List of admin versions (not checking if they actually exist)"
-        version_list = []
-        if self.filetype == "Image" and not self.is_version:
-            for version in ADMIN_VERSIONS:
-                version_list.append(os.path.join(self.versions_basedir, self.dirname, self.version_name(version)))
-        return version_list
-
-    def version_name(self, version_suffix, extra_options=None):
-        "Name of a version"  # FIXME: version_name for version?
-        options = self._get_options(version_suffix, extra_options)
-        return get_namer(
-            file_object=self,
-            version_suffix=version_suffix,
-            filename_root=self.filename_root,
-            extension=self.extension,
-            options=options,
-        ).get_version_name()
-
-    def version_path(self, version_suffix, extra_options=None):
-        "Path to a version (relative to storage location)"  # FIXME: version_path for version?
-        return os.path.join(
-            self.versions_basedir,
-            self.dirname,
-            self.version_name(version_suffix, extra_options))
-
-    def version_generate(self, version_suffix, extra_options=None):
-        "Generate a version"  # FIXME: version_generate for version?
-        path = self.path
-        options = self._get_options(version_suffix, extra_options)
-
-        version_path = self.version_path(version_suffix, extra_options)
-        if not self.site.storage.isfile(version_path):
-            version_path = self._generate_version(version_path, options)
-        elif get_modified_time(self.site.storage, path) > get_modified_time(self.site.storage, version_path):
-            version_path = self._generate_version(version_path, options)
-        return FileObject(version_path, site=self.site)
-
-    def _generate_version(self, version_path, options):
-        """
-        Generate Version for an Image.
-        value has to be a path relative to the storage location.
-        """
-
-        tmpfile = File(tempfile.NamedTemporaryFile())
-
-        try:
-            f = self.site.storage.open(self.path)
-        except IOError:
-            return ""
-        im = Image.open(f)
-        version_dir, version_basename = os.path.split(version_path)
-        root, ext = os.path.splitext(version_basename)
-        version = process_image(im, options)
-        if not version:
-            version = im
-        if 'methods' in options:
-            for m in options['methods']:
-                if callable(m):
-                    version = m(version)
-
-        # IF need Convert RGB
-        if ext in [".jpg", ".jpeg"] and version.mode not in ("L", "RGB"):
-            version = version.convert("RGB")
-
-        # save version
-        try:
-            version.save(tmpfile, format=Image.EXTENSION[ext.lower()], quality=VERSION_QUALITY, optimize=(os.path.splitext(version_path)[1] != '.gif'))
-        except IOError:
-            version.save(tmpfile, format=Image.EXTENSION[ext.lower()], quality=VERSION_QUALITY)
-        # remove old version, if any
-        if version_path != self.site.storage.get_available_name(version_path):
-            self.site.storage.delete(version_path)
-        self.site.storage.save(version_path, tmpfile)
-        # set permissions
-        if DEFAULT_PERMISSIONS is not None:
-            os.chmod(self.site.storage.path(version_path), DEFAULT_PERMISSIONS)
-        return version_path
-
     # DELETE METHODS
     # delete()
-    # delete_versions()
-    # delete_admin_versions()
 
     def delete(self):
         "Delete FileObject (deletes a folder recursively)"
@@ -538,19 +328,3 @@ class FileObject():
             self.site.storage.rmtree(self.path)
         else:
             self.site.storage.delete(self.path)
-
-    def delete_versions(self):
-        "Delete versions"
-        for version in self.versions():
-            try:
-                self.site.storage.delete(version)
-            except:
-                pass
-
-    def delete_admin_versions(self):
-        "Delete admin versions"
-        for version in self.admin_versions():
-            try:
-                self.site.storage.delete(version)
-            except:
-                pass

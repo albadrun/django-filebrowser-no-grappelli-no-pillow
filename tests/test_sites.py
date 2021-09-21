@@ -11,7 +11,7 @@ except ImportError:
 from django.utils.http import urlencode
 from mock import patch
 
-from filebrowser.settings import VERSIONS, DEFAULT_PERMISSIONS
+from filebrowser.settings import DEFAULT_PERMISSIONS
 from filebrowser.base import FileObject
 from filebrowser.sites import site
 from tests.base import FilebrowserTestCase as TestCase
@@ -31,25 +31,6 @@ class BrowseViewTests(TestCase):
         # Check directory was set correctly in the context. If this fails, it may indicate
         # that two sites were instantiated with the same name.
         self.assertTrue(site.directory == response.context['filebrowser_site'].directory)
-
-    def test_ckeditor_params_in_search_form(self):
-        """
-        The CKEditor GET params must be included in the search form as hidden
-        inputs so they persist after searching.
-        """
-        response = self.client.get(self.url, {
-            'pop': '3',
-            'type': 'image',
-            'CKEditor': 'id_body',
-            'CKEditorFuncNum': '1',
-        })
-
-        self.assertTrue(response.status_code == 200)
-        self.assertContains(response, '<input type="hidden" name="pop" value="3" />')
-        self.assertContains(response, '<input type="hidden" name="type" value="image" />')
-        self.assertContains(response, '<input type="hidden" name="CKEditor" value="id_body" />')
-        self.assertContains(response, '<input type="hidden" name="CKEditorFuncNum" value="1" />')
-
 
 class CreateDirViewTests(TestCase):
     def setUp(self):
@@ -220,13 +201,6 @@ class DetailViewTests(TestCase):
 
         self.assertTrue(response.status_code == 200)
 
-        # At this moment all versions should be generated. Check that.
-        pre_rename_versions = []
-        for version_suffix in VERSIONS:
-            path = self.F_IMAGE.version_path(version_suffix)
-            pre_rename_versions.append(path)
-            self.assertTrue(site.storage.exists(path))
-
         # Attemp renaming the file
         url = '?'.join([self.url, urlencode({'dir': self.F_IMAGE.dirname, 'filename': self.F_IMAGE.filename})])
         response = self.client.post(url, {'name': 'testpic.jpg'})
@@ -239,15 +213,6 @@ class DetailViewTests(TestCase):
 
         # Store the renamed file
         self.F_IMAGE = FileObject(os.path.join(self.F_IMAGE.head, 'testpic.jpg'), site=site)
-
-        # Check if all pre-rename versions were deleted:
-        for path in pre_rename_versions:
-            self.assertFalse(site.storage.exists(path))
-
-        # Check if all post–rename versions were deleted (resp. not being generated):
-        for version_suffix in VERSIONS:
-            path = self.F_IMAGE.version_path(version_suffix)
-            self.assertFalse(site.storage.exists(path))
 
 
 class DeleteConfirmViewTests(TestCase):
@@ -276,17 +241,8 @@ class DeleteViewTests(TestCase):
         Generate all versions for the uploaded file and attempt a deletion of that file.
         Finally, attempt a deletion of the tmp dir.
         """
-        versions = []
-        for version_suffix in VERSIONS:
-            versions.append(self.F_IMAGE.version_generate(version_suffix))
-
         # Request the delete view
         response = self.client.get(self.url, {'dir': self.F_IMAGE.dirname, 'filename': self.F_IMAGE.filename})
 
         # Check we get 302 response for delete
         self.assertTrue(response.status_code == 302)
-
-        # Check the file and its versions do not exist anymore
-        self.assertFalse(site.storage.exists(self.F_IMAGE.path))
-        for version in versions:
-            self.assertFalse(site.storage.exists(version.path))

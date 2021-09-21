@@ -6,28 +6,6 @@
 <ul class="errorlist"><li>{% trans "File not found" %}</li></ul>
 {% endif %}
 </div>
-{% if value.filetype == "Image" %}
-{% version value.path final_attrs.ADMIN_THUMBNAIL as thumbnail_version %}
-{% if thumbnail_version %}
-<p class="preview" id="preview_{{ final_attrs.id }}">
-    <a href="{{ value.url }}" target="_blank" id="previewlink_{{ final_attrs.id }}">
-        <img id="previewimage_{{ final_attrs.id }}" src="{{ thumbnail_version.url }}" class="preview" />
-    </a>
-</p>
-{% else %}
-<p class="preview" id="preview_{{ final_attrs.id }}" style="display: none;">
-    <a href="javascript://" target="_self" id="previewlink_{{ final_attrs.id }}">
-        <img id="previewimage_{{ final_attrs.id }}" class="preview" src="" />
-    </a>
-</p>
-{% endif %}
-{% else %}
-<p class="preview" id="preview_{{ final_attrs.id }}" style="display: none;">
-    <a href="javascript://" target="_self" id="previewlink_{{ final_attrs.id }}">
-        <img id="previewimage_{{ final_attrs.id }}" class="preview" src="" />
-    </a>
-</p>
-{% endif %}
 
 <script type="text/javascript">
     (function($){

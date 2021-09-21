@@ -7,15 +7,15 @@ def read(fname):
 
 
 setup(
-    name='django-filebrowser-no-grappelli',
+    name='django-filebrowser-no-grappelli-no-pillow',
     version='3.8.0',
-    description='Media-Management no Grappelli',
+    description='Media-Management no Grappelli no Pillow',
     long_description=read('README.rst'),
-    url='https://github.com/smacker/django-filebrowser-no-grappelli',
+    url='https://github.com/albadrun/django-filebrowser-no-grappelli-no-pillow',
     download_url='',
     author='Patrick Kranzlmueller, Axel Swoboda (vonautomatisch)',
     author_email='office@vonautomatisch.at',
-    maintainer='Maxim Sukharev',
+    maintainer='Maxim Sukharev, Ragil Pasaribu (albadrun)',
     maintainer_email='max@smacker.ru',
     license='BSD',
     packages=find_packages(exclude=['tests']),

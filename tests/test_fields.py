@@ -1,11 +1,10 @@
 # coding: utf-8
 
-from tests import FilebrowserTestCase as TestCase
-
 from six import string_types
 
 from filebrowser.base import FileObject
 from filebrowser.fields import FileBrowseField
+from tests.base import FilebrowserTestCase as TestCase
 
 
 class FileBrowseFieldTests(TestCase):

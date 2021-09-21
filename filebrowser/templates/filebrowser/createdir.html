@@ -10,7 +10,7 @@
 {% endblock %}
 
 <!-- COLTYPE/BODYCLASS -->
-{% block bodyclass %}change-form filebrowser{% if query.pop %} popup{% endif %}{% endblock %}
+{% block bodyclass %}change-form filebrowser{% endblock %}
 {% block coltype %}colM{% endblock %}
 
 <!-- BREADCRUMBS -->
@@ -19,10 +19,6 @@
 <!-- CONTENT -->
 {% block content %}
 <div id="content-main">
-    <!-- POP-UP BREADCRUMBS -->
-    {% if query.pop %}
-        {% include "filebrowser/include/breadcrumbs.html" %}
-    {% endif %}
     <form action="{% query_string '' 'p' %}" method="post">{% fb_csrf_token %}
         <div>
             {% if form.errors %}<p class="errornote">{% trans 'Please correct the following errors.' %}</p>{% endif %}

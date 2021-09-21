@@ -105,5 +105,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'tests', 'media')
 MEDIA_URL = '/media/'
 
 FILEBROWSER_DIRECTORY = '_test/uploads/'
-FILEBROWSER_VERSIONS_BASEDIR = '_test/_versions/'
-FILEBROWSER_PLACEHOLDER = '_test/uploads/placeholders/testimage.jpg'

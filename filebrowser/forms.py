@@ -12,22 +12,14 @@ from filebrowser.utils import convert_filename
 
 ALNUM_NAME_RE = re.compile(FOLDER_REGEX, re.U)
 
-TRANSPOSE_CHOICES = (
-    ("", u"-----"),
-    ("0", _(u"Flip horizontal")),
-    ("1", _(u"Flip vertical")),
-    ("2", _(u"Rotate 90° CW")),
-    ("4", _(u"Rotate 90° CCW")),
-    ("3", _(u"Rotate 180°")),
-)
-
 
 class CreateDirForm(forms.Form):
     """
     Form for creating a folder.
     """
 
-    name = forms.CharField(widget=forms.TextInput(attrs=dict({'class': 'vTextField'}, max_length=50, min_length=3)), label=_(u'Name'), help_text=_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'), required=True)
+    name = forms.CharField(widget=forms.TextInput(attrs=dict({'class': 'vTextField'}, max_length=50, min_length=3)), label=_(
+        u'Name'), help_text=_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'), required=True)
 
     def __init__(self, path, *args, **kwargs):
         self.path = path
@@ -39,7 +31,8 @@ class CreateDirForm(forms.Form):
         if self.cleaned_data['name']:
             # only letters, numbers, underscores, spaces and hyphens are allowed.
             if not ALNUM_NAME_RE.search(self.cleaned_data['name']):
-                raise forms.ValidationError(_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'))
+                raise forms.ValidationError(
+                    _(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'))
             # Folder must not already exist.
             if self.site.storage.isdir(os.path.join(self.path, convert_filename(self.cleaned_data['name']))):
                 raise forms.ValidationError(_(u'The Folder already exists.'))
@@ -52,7 +45,8 @@ class ChangeForm(forms.Form):
     """
 
     custom_action = forms.ChoiceField(label=_(u'Actions'), required=False)
-    name = forms.CharField(widget=forms.TextInput(attrs=dict({'class': 'vTextField'}, max_length=50, min_length=3)), label=_(u'Name'), help_text=_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'), required=True)
+    name = forms.CharField(widget=forms.TextInput(attrs=dict({'class': 'vTextField'}, max_length=50, min_length=3)), label=_(
+        u'Name'), help_text=_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'), required=True)
 
     def __init__(self, *args, **kwargs):
         self.path = kwargs.pop("path", None)
@@ -71,7 +65,8 @@ class ChangeForm(forms.Form):
         if self.cleaned_data['name']:
             # only letters, numbers, underscores, spaces and hyphens are allowed.
             if not ALNUM_NAME_RE.search(self.cleaned_data['name']):
-                raise forms.ValidationError(_(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'))
+                raise forms.ValidationError(
+                    _(u'Only letters, numbers, underscores, spaces and hyphens are allowed.'))
             #  folder/file must not already exist.
             if self.site.storage.isdir(os.path.join(self.path, convert_filename(self.cleaned_data['name']))) and os.path.join(self.path, convert_filename(self.cleaned_data['name'])) != self.fileobject.path:
                 raise forms.ValidationError(_(u'The Folder already exists.'))

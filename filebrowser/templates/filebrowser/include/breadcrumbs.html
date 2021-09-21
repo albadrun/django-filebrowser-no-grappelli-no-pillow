@@ -1,9 +1,9 @@
 {% load i18n fb_tags fb_compat %}
 
 <div class="breadcrumbs">
-    {% if not query.pop %}
-        <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
-    {% endif %}
+    
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> &rsaquo;
+    
 
     {% if breadcrumbs or breadcrumbs_title %}
         <a href="{% url 'filebrowser:fb_browse' %}{% query_string "" "q,dir,filename,p" %}">{% trans 'FileBrowser' %}</a> &rsaquo;
