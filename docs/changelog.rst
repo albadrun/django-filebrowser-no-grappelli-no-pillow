@@ -8,6 +8,11 @@
 Changelog
 =========
 
+3.8.1 (September 22nd, 2021)
+----------------------------
+
+* Remove Pillow and image processing.
+
 3.8.0 (Novermber 4th, 2019)
 ---------------------------
 
