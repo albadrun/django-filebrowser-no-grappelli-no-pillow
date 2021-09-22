@@ -8,7 +8,7 @@
 Changelog
 =========
 
-3.8.1 (September 22nd, 2021)
+3.8.2 (September 22nd, 2021)
 ----------------------------
 
 * Remove Pillow and image processing.

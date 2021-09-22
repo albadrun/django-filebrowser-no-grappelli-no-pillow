@@ -8,14 +8,14 @@ def read(fname):
 
 setup(
     name='django-filebrowser-no-grappelli-no-pillow',
-    version='3.8.1',
+    version='3.8.2',
     description='Media-Management no Grappelli no Pillow',
     long_description=read('README.rst'),
     url='https://github.com/albadrun/django-filebrowser-no-grappelli-no-pillow',
     download_url='',
     author='Patrick Kranzlmueller, Axel Swoboda (vonautomatisch), Maxim Sukharev',
     author_email='office@vonautomatisch.at, max@smacker.ru',
-    maintainer='Ragil Pasaribu (albadrun)',
+    maintainer='Ragil Pasaribu',
     maintainer_email='ragil.albadrun@gmail.com',
     license='BSD',
     packages=find_packages(exclude=['tests']),
